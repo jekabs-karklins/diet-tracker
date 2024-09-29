@@ -12,12 +12,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 meal_provider = MealProvider()
 
 @app.get("/", response_class=HTMLResponse)
-async def root(day: str = Query(None, description="Day of the week")):
+async def root(day: int = Query(None, description="Day of the week (1-7)")):
     # Add the CSS link to the HTML head
     css_link = '<link rel="stylesheet" href="/static/css/style.css">'
     
-    if day is None or day.lower() not in [d.lower() for d in day_name]:
-        links = "\n".join([f'<p><a href="/?day={d}">{d}</a></p>' for d in day_name])
+    if day is None or day < 1 or day > 7:
+        links = "\n".join([f'<p><a href="/?day={i}">{d}</a></p>' for i, d in enumerate(day_name, 1)])
         return f"""
         <html>
             <head>
@@ -33,6 +33,7 @@ async def root(day: str = Query(None, description="Day of the week")):
         </html>
         """
     else:
+        day_name_result = day_name[day - 1]
         meal = meal_provider.get_meal(day)
         return f"""
         <html>
@@ -42,7 +43,7 @@ async def root(day: str = Query(None, description="Day of the week")):
                 {css_link}
             </head>
             <body>
-                <h1>Meal for {day}</h1>
+                <h1>Meal for {day_name_result}</h1>
                 <p>{meal}</p>
             </body>
         </html>
